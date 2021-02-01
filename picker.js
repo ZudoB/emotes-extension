@@ -1,6 +1,8 @@
 window.addEventListener("DOMContentLoaded", () => {
     const lobbyChatbox = document.querySelector("#chat_input");
     const dmChatbox = document.querySelector("#social_dm_input");
+    const ingameChatbox = document.querySelector("#ingame_chat_input");
+    const leagueChatbox = document.querySelector("#league_chat_input");
 
     let chatbox;
 
@@ -102,6 +104,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
     dmChatbox.addEventListener("keyup", () => {
         chatbox = dmChatbox;
+        chatboxCheck();
+    });
+
+    ingameChatbox.addEventListener("keyup", () => {
+        chatbox = ingameChatbox;
+        chatboxCheck();
+    });
+
+    leagueChatbox.addEventListener("keyup", () => {
+        chatbox = leagueChatbox;
         chatboxCheck();
     });
 });
