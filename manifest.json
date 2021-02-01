@@ -1,7 +1,7 @@
 {
   "name": "Emote Picker for TETR.IO",
   "description": "Adds emote autocompletion to TETR.IO",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "manifest_version": 2,
   "content_scripts": [
     {
@@ -10,6 +10,10 @@
       "css": ["picker.css"],
       "run_at": "document_start"
     }
+  ],
+  "permissions": [
+    "*://tetr.io/*",
+    "*://emotes.kagar.in/*"
   ],
   "icons": {
     "256": "icon256.png",

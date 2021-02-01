@@ -8,22 +8,22 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const shownEmotes = [];
 
+    const roles = ["base"];
+
     let currentSearch;
 
     const emotePicker = document.createElement("div");
     emotePicker.classList.add("zudo-emote-picker");
     document.body.appendChild(emotePicker);
 
-    console.log(window.localStorage);
 
     fetch("https://emotes.kagar.in/emotes.json").then(res => res.json()).then(emotes => {
-        fetch("/api/users/me", {
+        console.log("Fetched emotes!");
+        fetch("https://tetr.io/api/users/me", {
             headers: {
                 "Authorization": "Bearer " + window.localStorage.getItem("userToken")
             }
         }).then(res => res.json()).then(user => {
-            const roles = ["base"];
-
             if (!user.success) {
                 console.log("Couldn't pull your profile information... You're probably anon, assuming that.");
             } else {
@@ -39,7 +39,9 @@ window.addEventListener("DOMContentLoaded", () => {
                     roles.push("staff");
                 }
             }
-
+        }).catch(err => {
+            console.warn(err);
+        }).finally(() => {
             roles.forEach(role => {
                 for (const emote in emotes[role]) {
                     if (emotes[role].hasOwnProperty(emote)) {
@@ -74,6 +76,8 @@ window.addEventListener("DOMContentLoaded", () => {
                 }
             });
         });
+    }).catch(err => {
+        console.warn(err);
     });
 
 
