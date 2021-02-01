@@ -1,0 +1,45 @@
+.zudo-emote-picker {
+    display: none;
+    position: fixed;
+    z-index: 9999999999999999999; /* ffs osk */
+    background-color: rgba(0,0,0,0.5);
+    color: #fff;
+    font-family: PFW, sans-serif;
+    font-size: 1.05em;
+    height: 400px;
+    overflow-y: scroll;
+    box-shadow: 0 2px 6px #000a, 0 0 8px #fff;
+}
+
+.zudo-emote-picker-emote {
+    display: none;
+    cursor: pointer;
+}
+
+.zudo-emote-picker-emote > div {
+    padding: 0.25em;
+}
+
+.zudo-emote-picker-emote img {
+    width: 1.3em;
+    height: 1.3em;
+    vertical-align: middle;
+    object-fit: contain;
+}
+
+.zudo-emote-picker-emote-supporter {
+    color: #ff4a19;
+}
+
+.zudo-emote-picker-emote-staff {
+    color: #2e9be8;
+}
+
+.zudo-emote-picker-emote-verified {
+    color: #19ff95;
+}
+
+.zudo-emote-picker-emote-name {
+    line-height: 1.3em;
+    padding-left: 1em;
+}
