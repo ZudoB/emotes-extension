@@ -1,5 +1,5 @@
 .zudo-emote-picker {
-    display: none;
+    /*display: none;*/
     position: fixed;
     z-index: 9999999999999999999; /* ffs osk */
     background-color: rgba(0,0,0,0.5);
@@ -12,8 +12,8 @@
 }
 
 .zudo-emote-picker-emote {
-    display: none;
     cursor: pointer;
+    display: flex;
 }
 
 .zudo-emote-picker-emote > div {
@@ -42,4 +42,16 @@
 .zudo-emote-picker-emote-name {
     line-height: 1.3em;
     padding-left: 1em;
+}
+
+.zudo-emote-picker-emote-hidden {
+    display: none !important;
+}
+
+body:not(.supporter) .zudo-emote-picker-emote-supporter {
+    display: none !important;
+}
+
+body:not(.staff) .zudo-emote-picker-emote-staff {
+    display: none !important;
 }

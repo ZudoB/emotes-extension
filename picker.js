@@ -1,123 +1,134 @@
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
     const lobbyChatbox = document.querySelector("#chat_input");
     const dmChatbox = document.querySelector("#social_dm_input");
     const ingameChatbox = document.querySelector("#ingame_chat_input");
     const leagueChatbox = document.querySelector("#league_chat_input");
 
-    let chatbox;
+    const chatboxes = [lobbyChatbox, dmChatbox, ingameChatbox, leagueChatbox];
 
-    const shownEmotes = [];
+    const emotes = await ((await fetch("https://emotes.kagar.in/emotes.json")).json());
 
-    const roles = ["base"];
+    const picker = document.createElement("div");
+    picker.classList.add("zudo-emote-picker");
 
-    let currentSearch;
+    let pickerSupressed = false;
+    let lastBox;
+    let emoteStartIndex = 0;
+    let emoteEndIndex = 0;
 
-    const emotePicker = document.createElement("div");
-    emotePicker.classList.add("zudo-emote-picker");
-    document.body.appendChild(emotePicker);
+    for (const [role, subemotes] of Object.entries(emotes)) {
+        // hide the verified emote - i'd love to have it, but there's no verified class on the body to show/hide it
+        if (role === "verified") continue;
+        for (const [emote, url] of Object.entries(subemotes)) {
+            const emoteEl = document.createElement("div");
+            emoteEl.dataset.zudoEmote = emote;
 
+            const emoteImgDiv = document.createElement("div");
 
-    fetch("https://emotes.kagar.in/emotes.json").then(res => res.json()).then(emotes => {
-        console.log("Fetched emotes!");
-        fetch("https://tetr.io/api/users/me", {
-            headers: {
-                "Authorization": "Bearer " + window.localStorage.getItem("userToken")
-            }
-        }).then(res => res.json()).then(user => {
-            if (!user.success) {
-                console.log("Couldn't pull your profile information... You're probably anon, assuming that.");
-            } else {
-                if (user.user.supporter) {
-                    roles.push("supporter");
-                }
+            const emoteImg = document.createElement("img");
+            emoteImg.src = "/res/" + url;
+            emoteImg.alt = emote;
 
-                if (user.user.verified) {
-                    roles.push("verified");
-                }
+            emoteImgDiv.appendChild(emoteImg);
 
-                if (user.user.role === "moderator" || user.user.role === "administrator") {
-                    roles.push("staff");
-                }
-            }
-        }).catch(err => {
-            console.warn(err);
-        }).finally(() => {
-            roles.forEach(role => {
-                for (const emote in emotes[role]) {
-                    if (emotes[role].hasOwnProperty(emote)) {
-                        shownEmotes.push([emote, emotes[role][emote]]);
+            const emoteDiv = document.createElement("div");
+            emoteDiv.innerText = emote;
 
-                        const el = document.createElement("div");
-                        el.classList.add("zudo-emote-picker-emote", "zudo-emote-picker-emote-" + role);
-                        el.dataset["zudoEmote"] = emote;
+            emoteEl.classList.add("zudo-emote-picker-emote", "zudo-emote-picker-emote-" + role);
 
-                        const imgContEl = document.createElement("div");
-                        const imgEl = document.createElement("img");
+            emoteEl.addEventListener("mousedown", e => {
+                e.preventDefault();
+                if (!lastBox) return;
 
-                        imgEl.src = "/res/" + emotes[role][emote];
+                const newContent = lastBox.value.substring(0, emoteStartIndex) + ":" + emote + ":" + lastBox.value.substring(emoteEndIndex);
+                const newCursorPos = emoteEndIndex + 2 + emote.length;
+                lastBox.value = newContent;
+                lastBox.focus();
+                lastBox.setSelectionRange(newCursorPos, newCursorPos);
 
-                        imgContEl.appendChild(imgEl);
-
-                        const nameEl = document.createElement("div");
-                        nameEl.classList.add("zudo-emote-picker-emote-name")
-                        nameEl.innerText = emote;
-
-                        el.appendChild(imgContEl);
-                        el.appendChild(nameEl);
-
-                        el.addEventListener("click", () => {
-                            chatbox.value = chatbox.value.substring(0, chatbox.value.length - currentSearch.length - 1);
-                            chatbox.value += ":" + emote + ": ";
-                            chatboxCheck();
-                            chatbox.focus();
-                        });
-                        emotePicker.appendChild(el);
-                    }
-                }
+                updateBox(lastBox);
             });
-        });
-    }).catch(err => {
-        console.warn(err);
-    });
 
-
-    function chatboxCheck() {
-        const match = chatbox.value.match(/:([^:]*)$/);
-        const colonCount = Array.from(chatbox.value).filter(l => l === ":").length;
-        if (match && colonCount % 2 !== 0) {
-            emotePicker.style.display = "block";
-            emotePicker.style.top = (chatbox.getBoundingClientRect().y - emotePicker.getBoundingClientRect().height - 10) + "px";
-            emotePicker.style.left = chatbox.getBoundingClientRect().x + "px";
-            emotePicker.style.width = chatbox.getBoundingClientRect().width + "px";
-            currentSearch = match[1];
-            const emoteResults = shownEmotes.filter(emote => emote[0].toLowerCase().indexOf(currentSearch) !== -1);
-            document.querySelectorAll("[data-zudo-emote]").forEach(el => el.style.display = "none");
-            emoteResults.forEach(emote => {
-                document.querySelector(`[data-zudo-emote=${emote[0]}]`).style.display = "flex";
-            });
-        } else {
-            emotePicker.style.display = "none";
+            emoteEl.appendChild(emoteImgDiv)
+            emoteEl.appendChild(emoteDiv);
+            picker.appendChild(emoteEl);
         }
     }
 
+    function updateBox(box) {
+        if (pickerSupressed) {
+            picker.style.display = "none";
+            return;
+        }
 
-    lobbyChatbox.addEventListener("keyup", () => {
-        chatbox = lobbyChatbox;
-        chatboxCheck();
+        let picking = false;
+        let emoteStart = 0;
+        let search = "";
+
+        for (let i = 0; i < box.value.length; i++) {
+            const char = box.value[i];
+
+            if (!picking && char === ":") {
+                picking = true;
+                emoteStart = i;
+            } else if (picking && !char.match(/[a-zA-Z0-9_]/)) {
+                picking = false;
+                search = "";
+            } else if (picking) {
+                search += char;
+            }
+        }
+
+        if (picking) {
+            emoteStartIndex = emoteStart;
+            emoteEndIndex = emoteStart + search.length + 1;
+            search = search.toLowerCase().trim();
+            picker.style.display = "block";
+            picker.style.top = (box.getBoundingClientRect().y - picker.getBoundingClientRect().height - 10) + "px";
+            picker.style.left = box.getBoundingClientRect().x + "px";
+            picker.style.width = box.getBoundingClientRect().width + "px";
+
+            if (search.length > 0) {
+                document.querySelectorAll(`[data-zudo-emote]`).forEach(el => el.classList.add("zudo-emote-picker-emote-hidden"));
+                document.querySelectorAll(`[data-zudo-emote*='${search}']`).forEach(el => el.classList.remove("zudo-emote-picker-emote-hidden"));
+            } else {
+                document.querySelectorAll(`[data-zudo-emote]`).forEach(el => el.classList.remove("zudo-emote-picker-emote-hidden"));
+            }
+        } else {
+            picker.style.display = "none";
+        }
+    }
+
+    chatboxes.forEach(box => {
+        box.addEventListener("click", () => {
+            lastBox = box;
+            updateBox(box);
+        });
+
+        box.addEventListener("focus", () => {
+            lastBox = box;
+            updateBox(box);
+        });
+
+        box.addEventListener("blur", e => {
+            picker.style.display = "none";
+        });
+
+        box.addEventListener("keyup", () => {
+            lastBox = box;
+            updateBox(box);
+        });
     });
 
-    dmChatbox.addEventListener("keyup", () => {
-        chatbox = dmChatbox;
-        chatboxCheck();
+    document.querySelector("#social").addEventListener("transitionstart", () => {
+        pickerSupressed = true;
+        picker.style.display = "none";
     });
 
-    ingameChatbox.addEventListener("keyup", () => {
-        chatbox = ingameChatbox;
-        chatboxCheck();
+    document.querySelector("#social").addEventListener("transitionend", () => {
+        pickerSupressed = false;
+        picker.style.display = "none";
     });
 
-    leagueChatbox.addEventListener("keyup", () => {
-        chatbox = leagueChatbox;
-        chatboxCheck();
-    });
+    document.body.appendChild(picker);
 });
