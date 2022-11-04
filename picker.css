@@ -1,5 +1,5 @@
 .zudo-emote-picker {
-    /*display: none;*/
+    display: none;
     position: fixed;
     z-index: 9999999999999999999; /* ffs osk */
     background-color: rgba(0,0,0,0.5);
