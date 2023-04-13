@@ -6,7 +6,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     const chatboxes = [lobbyChatbox, dmChatbox, ingameChatbox, leagueChatbox];
 
-    const emotes = await ((await fetch("https://emotes.kagar.in/emotes.json")).json());
+    const emotes = await ((await fetch("https://emotes.zudo.space/emotes.json")).json());
 
     const picker = document.createElement("div");
     picker.classList.add("zudo-emote-picker");
@@ -110,7 +110,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             updateBox(box);
         });
 
-        box.addEventListener("blur", e => {
+        box.addEventListener("blur", () => {
             picker.style.display = "none";
         });
 
